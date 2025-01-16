@@ -484,17 +484,17 @@ WantedBy=multi-user.target
 EOF
     if [ -f /etc/centos-release ]; then
         yum install -y chrony
-        systemctl start chronyd
-        systemctl enable chronyd
+        service chronyd start
+        service chronyd enable
         chronyc -a makestep
         yum update -y ca-certificates
         bash -c 'echo "0 0" > /proc/sys/net/ipv4/ping_group_range'
     fi
     systemctl daemon-reload
-    systemctl enable sing-box
-    systemctl start sing-box
-    systemctl enable argo
-    systemctl start argo
+    service sing-box enable
+    service sing-box start
+    service argo enable
+    service argo start
 }
 # 适配alpine 守护进程
 alpine_openrc_services() {
@@ -615,7 +615,7 @@ if [ $? -eq 0 ]; then
     else
         rm /run/nginx.pid
         systemctl daemon-reload
-        systemctl restart nginx
+        service nginx restart
     fi
 fi
 }
@@ -628,7 +628,7 @@ if [ ${check_singbox} -eq 1 ]; then
         rc-service sing-box start
     else
         systemctl daemon-reload
-        systemctl start "${server_name}"
+        service "${server_name}" start
     fi
    if [ $? -eq 0 ]; then
        green "${server_name} 服务已成功启动\n"
@@ -653,7 +653,7 @@ if [ ${check_singbox} -eq 0 ]; then
     if [ -f /etc/alpine-release ]; then
         rc-service sing-box stop
     else
-        systemctl stop "${server_name}"
+        service "${server_name}" stop
     fi
    if [ $? -eq 0 ]; then
        green "${server_name} 服务已成功停止\n"
@@ -680,7 +680,7 @@ if [ ${check_singbox} -eq 0 ]; then
         rc-service ${server_name} restart
     else
         systemctl daemon-reload
-        systemctl restart "${server_name}"
+        service "${server_name}" restart
     fi
     if [ $? -eq 0 ]; then
         green "${server_name} 服务已成功重启\n"
@@ -706,7 +706,7 @@ if [ ${check_argo} -eq 1 ]; then
         rc-service argo start
     else
         systemctl daemon-reload
-        systemctl start argo
+        service argo start
     fi
     if [ $? -eq 0 ]; then
         green "Argo 服务已成功重启\n"
@@ -732,7 +732,7 @@ if [ ${check_argo} -eq 0 ]; then
         rc-service stop start
     else
         systemctl daemon-reload
-        systemctl stop argo
+        service argo stop
     fi
     if [ $? -eq 0 ]; then
         green "Argo 服务已成功停止\n"
@@ -758,7 +758,7 @@ if [ ${check_argo} -eq 0 ]; then
         rc-service argo restart
     else
         systemctl daemon-reload
-        systemctl restart argo
+        service argo restart
     fi
     if [ $? -eq 0 ]; then
         green "Argo 服务已成功重启\n"
@@ -784,7 +784,7 @@ if command -v nginx &>/dev/null; then
         rc-service nginx start
     else
         systemctl daemon-reload
-        systemctl start nginx
+        service nginx start
     fi
     if [ $? -eq 0 ]; then
         green "Nginx 服务已成功启动\n"
@@ -808,7 +808,7 @@ if command -v nginx &>/dev/null; then
         nginx -s reload
         rc-service nginx restart
     else
-        systemctl restart nginx
+        service nginx restart
     fi
     if [ $? -eq 0 ]; then
         green "Nginx 服务已成功重启\n"
@@ -836,11 +836,11 @@ uninstall_singbox() {
                 rc-update del argo default
            else
                 # 停止 sing-box和 argo 服务
-                systemctl stop "${server_name}"
-                systemctl stop argo
+                service "${server_name}" stop
+                service argo stop
                 # 禁用 sing-box 服务
-                systemctl disable "${server_name}"
-                systemctl disable argo
+                service "${server_name}" disable
+                service argo disable
 
                 # 重新加载 systemd
                 systemctl daemon-reload || true
